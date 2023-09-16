@@ -37,10 +37,6 @@ namespace Core.MessageSystem
 
 		private readonly Dictionary<Guid, Subscriber> subscribers = new Dictionary<Guid, Subscriber>();
 
-		public void Init()
-		{
-		}
-
 		/// <summary>
 		/// 구독 함수. 무조건 구독하면 핸들러를 반환하는데 가지고 있어야 한다.
 		/// 핸들러를 통해서 구독 해제를 하는 구조.
