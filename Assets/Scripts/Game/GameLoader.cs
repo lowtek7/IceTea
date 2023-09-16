@@ -1,8 +1,6 @@
-using UnityEngine;
-
 namespace Game
 {
-	public class GameLoader : MonoBehaviour
+	public class GameLoader
 	{
 	}
 }
