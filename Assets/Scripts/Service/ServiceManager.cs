@@ -16,6 +16,10 @@ namespace Service
 
 		private static List<IServiceManagerCallback> callbacks = new List<IServiceManagerCallback>();
 
+		private static SortedList<int, List<IOrderUpdate>> sortedUpdateList = new SortedList<int, List<IOrderUpdate>>();
+
+		private static SortedList<int, List<IOrderLateUpdate>> sortedLateUpdateList = new SortedList<int, List<IOrderLateUpdate>>();
+
 		public static IEnumerable<IGameService> Services => serviceMap.Values;
 
 		public static bool TryGetService<CT>(out CT service) where CT : IGameService
@@ -48,24 +52,31 @@ namespace Service
 				return;
 			}
 
-			{
-				if (serviceMap.TryGetValue(serviceInterfaceType, out var original))
-				{
-					{
-						if (original is IGameServiceCallback callback)
-						{
-							callback.OnDeactivate();
-						}
-					}
-
-					foreach (var callback in callbacks)
-					{
-						callback.OnDeactivateService(service);
-					}
-				}
-			}
+			ClearService(serviceInterfaceType);
 
 			serviceMap[serviceInterfaceType] = service;
+
+			if (service is IOrderUpdate orderUpdate)
+			{
+				if (!sortedUpdateList.TryGetValue(orderUpdate.UpdateOrder, out var updateList))
+				{
+					updateList = new List<IOrderUpdate>();
+					sortedUpdateList.Add(orderUpdate.UpdateOrder, updateList);
+				}
+
+				updateList.Add(orderUpdate);
+			}
+
+			if (service is IOrderLateUpdate orderLateUpdate)
+			{
+				if (!sortedLateUpdateList.TryGetValue(orderLateUpdate.LateUpdateOrder, out var lateUpdateList))
+				{
+					lateUpdateList = new List<IOrderLateUpdate>();
+					sortedLateUpdateList.Add(orderLateUpdate.LateUpdateOrder, lateUpdateList);
+				}
+
+				lateUpdateList.Add(orderLateUpdate);
+			}
 
 			{
 				if (service is IGameServiceCallback callback)
@@ -89,6 +100,18 @@ namespace Service
 		{
 			if (serviceMap.TryGetValue(serviceInterfaceType, out var service))
 			{
+				if (service is IOrderUpdate orderUpdate &&
+					sortedUpdateList.TryGetValue(orderUpdate.UpdateOrder, out var updateList))
+				{
+					updateList.Remove(orderUpdate);
+				}
+
+				if (service is IOrderLateUpdate orderLateUpdate &&
+					sortedLateUpdateList.TryGetValue(orderLateUpdate.LateUpdateOrder, out var lateUpdateList))
+				{
+					lateUpdateList.Remove(orderLateUpdate);
+				}
+
 				{
 					if (service is IGameServiceCallback callback)
 					{
@@ -132,7 +155,9 @@ namespace Service
 		{
 			foreach (var keyValuePair in serviceMap)
 			{
-				if (keyValuePair.Value is IUpdate update)
+				var service = keyValuePair.Value;
+
+				if (service is IUpdate update and not IOrderUpdate)
 				{
 					update.UpdateProcess(deltaTime);
 				}
@@ -143,7 +168,7 @@ namespace Service
 		{
 			foreach (var keyValuePair in serviceMap)
 			{
-				if (keyValuePair.Value is ILateUpdate update)
+				if (keyValuePair.Value is ILateUpdate update and not IOrderLateUpdate)
 				{
 					update.LateUpdateProcess(deltaTime);
 				}
@@ -167,6 +192,8 @@ namespace Service
 				}
 			}
 
+			sortedUpdateList.Clear();
+			sortedLateUpdateList.Clear();
 			serviceMap.Clear();
 		}
 	}
