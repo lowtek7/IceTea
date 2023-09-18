@@ -1,4 +1,4 @@
-﻿namespace Game.Battle
+﻿namespace Service.Game.Battle
 {
 	public interface IBattleObject
 	{

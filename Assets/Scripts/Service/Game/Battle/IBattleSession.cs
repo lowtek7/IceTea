@@ -1,7 +1,7 @@
 ﻿using System;
 using Core;
 
-namespace Game.Battle
+namespace Service.Game.Battle
 {
 	/// <summary>
 	/// 배틀의 단위는 세션으로 관리 된다.
