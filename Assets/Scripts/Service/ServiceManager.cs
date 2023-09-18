@@ -162,6 +162,14 @@ namespace Service
 					update.UpdateProcess(deltaTime);
 				}
 			}
+
+			foreach (var updateList in sortedUpdateList.Values)
+			{
+				foreach (var update in updateList)
+				{
+					update.UpdateProcess(deltaTime);
+				}
+			}
 		}
 
 		public static void LateUpdate(float deltaTime)
@@ -171,6 +179,14 @@ namespace Service
 				if (keyValuePair.Value is ILateUpdate update and not IOrderLateUpdate)
 				{
 					update.LateUpdateProcess(deltaTime);
+				}
+			}
+
+			foreach (var lateUpdateList in sortedLateUpdateList.Values)
+			{
+				foreach (var lateUpdate in lateUpdateList)
+				{
+					lateUpdate.LateUpdateProcess(deltaTime);
 				}
 			}
 		}
