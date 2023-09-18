@@ -10,6 +10,8 @@ namespace Service.Game.Battle
 	{
 		int Id { get; }
 
+		bool IsAlive { get; }
+
 		bool IsRunning { get; }
 
 		/// <summary>

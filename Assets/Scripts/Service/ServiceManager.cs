@@ -200,6 +200,11 @@ namespace Service
 					{
 						callback.OnDeactivate();
 					}
+
+					if (service is IDisposable disposable)
+					{
+						disposable.Dispose();
+					}
 				}
 
 				foreach (var callback in callbacks)

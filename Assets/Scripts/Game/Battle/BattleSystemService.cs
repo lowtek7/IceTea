@@ -1,17 +1,77 @@
-﻿using Core;
+﻿using System;
+using System.Collections.Generic;
+using Core;
 using Service.Game.Battle;
 
 namespace Game.Battle
 {
-	public class BattleSystemService : IBattleSystemService
+	public class BattleSystemService : IBattleSystemService, IOrderUpdate, IOrderLateUpdate, IDisposable
 	{
+		private IGameWorld GameWorld { get; set; }
+
+		public int UpdateOrder => -1;
+
+		public int LateUpdateOrder => -1;
+
+		private readonly Dictionary<Type, IBattleSystem> battleSystems = new Dictionary<Type, IBattleSystem>();
+
 		public void Init(IGameWorld gameWorld)
 		{
+			GameWorld = gameWorld;
+		}
+
+		public void Dispose()
+		{
+			battleSystems.Clear();
+			GameWorld = null;
 		}
 
 		public T CreateSystem<T>() where T : IBattleSystem, new()
 		{
-			throw new System.NotImplementedException();
+			var systemType = typeof(T);
+
+			if (battleSystems.TryGetValue(systemType, out var system))
+			{
+				return (T)system;
+			}
+
+			var entityHandle = GameWorld.CreateEntity();
+			var resultSystem = new T();
+
+			resultSystem.Init(GameWorld, entityHandle);
+
+			return resultSystem;
+		}
+
+		public bool DestroySystem<T>() where T : IBattleSystem
+		{
+			var systemType = typeof(T);
+
+			if (battleSystems.TryGetValue(systemType, out var system))
+			{
+				system.Dispose();
+				battleSystems.Remove(systemType);
+
+				return true;
+			}
+
+			return false;
+		}
+
+		public void UpdateProcess(float deltaTime)
+		{
+			foreach (var battleSystem in battleSystems.Values)
+			{
+				battleSystem.UpdateProcess(deltaTime);
+			}
+		}
+
+		public void LateUpdateProcess(float deltaTime)
+		{
+			foreach (var battleSystem in battleSystems.Values)
+			{
+				battleSystem.LateUpdateProcess(deltaTime);
+			}
 		}
 	}
 }

@@ -19,6 +19,8 @@ namespace Core
 			Id = id;
 		}
 
+		public static EntityHandle Empty => new EntityHandle(null, -1);
+
 		public EntityHandle Add<TComponent>() where TComponent : struct
 		{
 			World.GetComponentPool<TComponent>().Add(Id);
