@@ -1,12 +1,11 @@
 {
-    "name": "UnityService",
+    "name": "UnityGame",
     "rootNamespace": "",
     "references": [
         "GUID:c4dcc632d45fa314cbe24d56f06b0627",
         "GUID:49e8cc87c756c184793dc0e4cb341fbd",
-        "GUID:71cd56057bf1a734298ba6fb3b7de3a0",
-        "GUID:7abe2741ef9582749b312b4d28f92efc",
-        "GUID:29172185867a14546b3fd6165a608fba"
+        "GUID:29172185867a14546b3fd6165a608fba",
+        "GUID:71cd56057bf1a734298ba6fb3b7de3a0"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

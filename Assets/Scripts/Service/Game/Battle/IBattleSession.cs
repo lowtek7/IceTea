@@ -6,10 +6,8 @@ namespace Service.Game.Battle
 	/// <summary>
 	/// 배틀의 단위는 세션으로 관리 된다.
 	/// </summary>
-	public interface IBattleSession : IUpdate, ILateUpdate, IDisposable
+	public interface IBattleSession : IUpdate, ILateUpdate, IDisposable, IEntity
 	{
-		int Id { get; }
-
 		bool IsAlive { get; }
 
 		bool IsRunning { get; }
@@ -26,5 +24,7 @@ namespace Service.Game.Battle
 		void Start();
 
 		void Stop();
+
+		IBattleLog GetLog(int logId);
 	}
 }

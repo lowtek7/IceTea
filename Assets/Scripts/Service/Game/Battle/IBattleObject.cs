@@ -1,7 +1,8 @@
-﻿namespace Service.Game.Battle
+﻿using Core;
+
+namespace Service.Game.Battle
 {
-	public interface IBattleObject
+	public interface IBattleObject : IEntity
 	{
-		public int Id { get; }
 	}
 }

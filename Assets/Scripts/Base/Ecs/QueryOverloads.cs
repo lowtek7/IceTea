@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 using System.Threading.Tasks;
-
+using Base.Utility;
 using BlitzEcs.Util;
 
 // This code was automatically generated from a template.

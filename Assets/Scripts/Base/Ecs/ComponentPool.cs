@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
-using BlitzEcs.Util;
+using Base.Utility;
 
 namespace BlitzEcs
 {
@@ -26,7 +26,7 @@ namespace BlitzEcs
 		public Type ComponentType => typeof(TComponent);
 		public int Count => count;
 
-		private SparseSet<bool> entitiesToRemove;
+		private Util.SparseSet<bool> entitiesToRemove;
 
 		// Used for running custom clean-up logic when a component is destroyed.
 		private IEcsDestroyHandler<TComponent> destroyHandler;
@@ -48,7 +48,7 @@ namespace BlitzEcs
 			components = new TComponent[1];
 			count = 0;
 
-			entitiesToRemove = new SparseSet<bool>();
+			entitiesToRemove = new Util.SparseSet<bool>();
 			// To avoid boxing and heap allocations when destroying a component, only one
 			// component is boxed and then used to destroy the other components, which
 			// therefore don't have to be individually boxed.

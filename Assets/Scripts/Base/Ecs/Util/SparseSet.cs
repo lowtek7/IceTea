@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using Base.Utility;
 
 namespace BlitzEcs.Util {
 	public class SparseSet<T> {

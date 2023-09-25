@@ -32,6 +32,11 @@ namespace Core.MessageSystem
 					subscriber.Invoke(message);
 				}
 			}
+
+			if (message is IDisposable disposable)
+			{
+				disposable.Dispose();
+			}
 		}
 	}
 }
