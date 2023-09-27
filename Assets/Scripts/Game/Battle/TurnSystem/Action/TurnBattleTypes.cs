@@ -4,8 +4,9 @@
 	{
 		Unknown = -1,
 		Attack = 0,
-		Cast,
-		Guard,
+		GroupAttack,
+		Cast = 10,
+		Guard = 20,
 		Custom = 1000,
 	}
 }
