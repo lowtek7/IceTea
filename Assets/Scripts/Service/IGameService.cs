@@ -8,7 +8,7 @@ namespace Service
 	/// </summary>
 	public interface IGameService
 	{
-		void Init(IGameWorld gameWorld);
+		void Init();
 	}
 
 	public interface IGameServiceCallback

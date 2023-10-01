@@ -143,11 +143,11 @@ namespace Service
 			}
 		}
 
-		public static void Init(IGameWorld gameWorld)
+		public static void Init()
 		{
 			foreach (var service in serviceMap.Values)
 			{
-				service.Init(gameWorld);
+				service.Init();
 			}
 		}
 

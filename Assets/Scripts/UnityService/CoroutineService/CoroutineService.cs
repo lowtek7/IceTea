@@ -18,7 +18,7 @@ namespace UnityService.CoroutineService
 			runner = null;
 		}
 
-		public void Init(IGameWorld gameWorld)
+		public void Init()
 		{
 			runner = new CoroutineRunner();
 		}

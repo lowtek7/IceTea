@@ -9,56 +9,53 @@ namespace Game.Battle.TurnSystem
 {
 	public class TurnBattleSystem : IBattleSystem
 	{
-		private IGameWorld GameWorld { get; set; }
+		public static int MaxSessionId => 100;
 
-		private EntityHandle SelfHandle { get; set; }
+		private Queue<int> SessionIdQueue { get; set; }
 
 		private SortedList<int, IBattleSession> Sessions { get; set; }
+
+		public IEnumerable<int> SessionIds => Sessions.Keys;
 
 		/// <summary>
 		/// 여기서 턴 배틀 시스템의 셋팅 정보를 에셋기반으로 읽어와서 셋팅 해야함.
 		/// </summary>
-		/// <param name="world"></param>
-		/// <param name="systemEntityHandle"></param>
-		public void Init(IGameWorld world, EntityHandle systemEntityHandle)
+		public void Init()
 		{
-			GameWorld = world;
-			SelfHandle = systemEntityHandle;
+			SessionIdQueue = new Queue<int>();
 			Sessions = new SortedList<int, IBattleSession>();
 
-			systemEntityHandle.Add<SystemComponent>();
-			systemEntityHandle.Add<SessionsComponent>();
-
-			ref var sessions = ref SelfHandle.Get<SessionsComponent>();
-			sessions.SessionIdList = new List<int>();
+			for (int i = 0; i < MaxSessionId; i++)
+			{
+				SessionIdQueue.Enqueue(i);
+			}
 		}
 
 		public void Dispose()
 		{
-			GameWorld.DestroyEntity(SelfHandle);
+			foreach (var session in Sessions.Values)
+			{
+				SessionIdQueue.Enqueue(session.Id);
+				session.Dispose();
+			}
 
-			SelfHandle = EntityHandle.Empty;
-			GameWorld = null;
+			Sessions.Clear();
 		}
 
 		public IBattleSession CreateSession()
 		{
-			var sessionHandle = GameWorld.CreateEntity();
-			ref var sessions = ref SelfHandle.Get<SessionsComponent>();
-			var session = new TurnBattleSession(GameWorld, sessionHandle);
+			var id = SessionIdQueue.Dequeue();
+			var session = new TurnBattleSession(id);
 
-			sessions.SessionIdList.Add(sessionHandle.Id);
-			Sessions.Add(sessionHandle.Id, session);
+			Sessions.Add(id, session);
 
 			return session;
 		}
 
 		public void ReleaseSession(IBattleSession battleSession)
 		{
-			ref var sessions = ref SelfHandle.Get<SessionsComponent>();
-
+			SessionIdQueue.Enqueue(battleSession.Id);
 			Sessions.Remove(battleSession.Id);
-			sessions.SessionIdList.Remove(battleSession.Id);
 
 			battleSession.Dispose();
 		}

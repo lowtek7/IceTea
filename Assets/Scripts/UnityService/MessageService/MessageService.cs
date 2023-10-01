@@ -12,7 +12,7 @@ namespace UnityService.MessageService
 	{
 		private readonly MessageSystem messageSystem = new MessageSystem();
 
-		public void Init(IGameWorld gameWorld)
+		public void Init()
 		{
 		}
 

@@ -9,11 +9,9 @@ namespace Game
 	/// </summary>
 	public class GameWorldService : IGameWorldService, IDisposable
 	{
-		private IGameWorld GameWorld { get; set; }
-
 		private bool isInit = false;
 
-		public void Init(IGameWorld gameWorld)
+		public void Init()
 		{
 			if (isInit)
 			{
@@ -21,19 +19,10 @@ namespace Game
 			}
 
 			isInit = true;
-			GameWorld = gameWorld;
-		}
-
-		public bool TryGetWorld(out IGameWorld gameWorld)
-		{
-			gameWorld = GameWorld;
-
-			return GameWorld != null;
 		}
 
 		public void Dispose()
 		{
-			GameWorld = null;
 			isInit = false;
 		}
 	}

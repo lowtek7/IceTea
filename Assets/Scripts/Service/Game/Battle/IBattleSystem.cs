@@ -1,16 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using Core;
 
 namespace Service.Game.Battle
 {
 	public interface IBattleSystem : IUpdate, ILateUpdate, IDisposable
 	{
+		IEnumerable<int> SessionIds { get; }
+
 		/// <summary>
 		/// 배틀 시스템 초기화
 		/// </summary>
-		/// <param name="world"></param>
-		/// <param name="systemEntityHandle">해당 배틀 시스템의 엔티티 핸들</param>
-		void Init(IGameWorld world, EntityHandle systemEntityHandle);
+		void Init();
 
 		/// <summary>
 		/// 배틀은 기본적으로 세션 별로 나뉘어져 있다.

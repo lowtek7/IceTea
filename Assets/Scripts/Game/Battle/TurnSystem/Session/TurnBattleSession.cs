@@ -12,35 +12,22 @@ namespace Game.Battle.TurnSystem.Session
 	{
 		private int currentTurn = 0;
 
-		private IGameWorld GameWorld { get; set; }
-
-		private EntityHandle SessionHandle { get; set; }
-
 		private List<IBattleLog> BattleLogs { get; set; }
 
-		public TurnBattleSession(IGameWorld world, EntityHandle entityHandle)
+		public TurnBattleSession(int id)
 		{
-			GameWorld = world;
-			SessionHandle = entityHandle;
+			Id = id;
 			BattleLogs = new List<IBattleLog>(128);
-
-			SessionHandle.Add<SessionComponent>();
 		}
 
-		public int Id => SessionHandle.Id;
+		public int Id { get; }
 
-		public bool IsAlive => SessionHandle.IsAlive;
+		public bool IsAlive { get; }
 
 		public bool IsRunning
 		{
 			get
 			{
-				if (SessionHandle.IsAlive &&
-					SessionHandle.TryGet(out SessionComponent sessionComponent))
-				{
-					return sessionComponent.IsRunning;
-				}
-
 				return false;
 			}
 		}
@@ -70,19 +57,6 @@ namespace Game.Battle.TurnSystem.Session
 
 		public void Dispose()
 		{
-			GameWorld.DestroyEntity(SessionHandle);
-
-			SessionHandle = EntityHandle.Empty;
-			GameWorld = null;
-		}
-		public IBattleObject RegisterEntity(EntityHandle entityHandle)
-		{
-			throw new System.NotImplementedException();
-		}
-
-		public bool UnregisterEntity(EntityHandle entityHandle)
-		{
-			throw new System.NotImplementedException();
 		}
 
 		public void Start()

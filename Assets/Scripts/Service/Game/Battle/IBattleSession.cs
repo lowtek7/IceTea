@@ -12,15 +12,6 @@ namespace Service.Game.Battle
 
 		bool IsRunning { get; }
 
-		/// <summary>
-		/// 세션에 엔티티 등록
-		/// </summary>
-		/// <param name="entityHandle"></param>
-		/// <returns></returns>
-		IBattleObject RegisterEntity(EntityHandle entityHandle);
-
-		bool UnregisterEntity(EntityHandle entityHandle);
-
 		void Start();
 
 		void Stop();

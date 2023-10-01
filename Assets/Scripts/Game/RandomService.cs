@@ -16,7 +16,7 @@ namespace Game
 
 		public ulong Step => baseStep;
 
-		public void Init(IGameWorld gameWorld)
+		public void Init()
 		{
 			innerSeed = new Random().Next();
 			baseRandom = new Random(innerSeed);

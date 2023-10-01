@@ -7,23 +7,19 @@ namespace Game.Battle
 {
 	public class BattleSystemService : IBattleSystemService, IOrderUpdate, IOrderLateUpdate, IDisposable
 	{
-		private IGameWorld GameWorld { get; set; }
-
 		public int UpdateOrder => -1;
 
 		public int LateUpdateOrder => -1;
 
 		private readonly Dictionary<Type, IBattleSystem> battleSystems = new Dictionary<Type, IBattleSystem>();
 
-		public void Init(IGameWorld gameWorld)
+		public void Init()
 		{
-			GameWorld = gameWorld;
 		}
 
 		public void Dispose()
 		{
 			battleSystems.Clear();
-			GameWorld = null;
 		}
 
 		public T CreateSystem<T>() where T : IBattleSystem, new()
@@ -35,10 +31,9 @@ namespace Game.Battle
 				return (T)system;
 			}
 
-			var entityHandle = GameWorld.CreateEntity();
 			var resultSystem = new T();
 
-			resultSystem.Init(GameWorld, entityHandle);
+			resultSystem.Init();
 
 			return resultSystem;
 		}
