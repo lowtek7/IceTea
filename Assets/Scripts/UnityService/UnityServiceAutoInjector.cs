@@ -25,7 +25,7 @@ namespace UnityService
 	/// </summary>
 	public class UnityServiceAutoInjector : MonoBehaviour
 	{
-		private void Start()
+		public void Inject()
 		{
 			// start 시점에서 서비스들을 수집하게 변경하자.
 			var types = TypeUtility.GetTypesWithAttribute(typeof(UnityServiceAttribute));
