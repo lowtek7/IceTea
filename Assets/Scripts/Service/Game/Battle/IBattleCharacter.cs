@@ -2,6 +2,6 @@
 {
 	public interface IBattleCharacter : IBattleObject
 	{
-
+		IBattleEntityController BattleEntityController { get; }
 	}
 }

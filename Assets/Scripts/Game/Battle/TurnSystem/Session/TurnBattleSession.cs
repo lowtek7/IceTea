@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Base.Coroutines;
 using Core;
 using Game.Battle.TurnSystem.Action;
+using Game.Battle.TurnSystem.Entity;
 using Game.Battle.TurnSystem.Message;
-using Game.Battle.TurnSystem.Session.Component;
 using Service;
 using Service.Game.Battle;
 
@@ -12,34 +16,41 @@ namespace Game.Battle.TurnSystem.Session
 	{
 		private int currentTurn = 0;
 
-		private List<IBattleLog> BattleLogs { get; set; }
+		private List<IBattleLog> BattleLogs { get; }
+
+		private Dictionary<int, TurnBattleCharacter> Characters { get; }
+
+		private List<int> TurnTable { get; }
+
+		private int currentTurnCursor = 0;
 
 		public TurnBattleSession(int id)
 		{
 			Id = id;
+			IsAlive = true;
+			IsRunning = false;
 			BattleLogs = new List<IBattleLog>(128);
+			Characters = new Dictionary<int, TurnBattleCharacter>();
+			TurnTable = new List<int>(200);
+			turnProcessHandle = default;
 		}
 
 		public int Id { get; }
 
-		public bool IsAlive { get; }
+		public bool IsAlive { get; private set; }
 
-		public bool IsRunning
-		{
-			get
-			{
-				return false;
-			}
-		}
+		public bool IsRunning { get; private set; }
+
+		public IEnumerable<int> CharacterIds => Characters.Keys;
+
+		private CoroutineHandle turnProcessHandle;
 
 		public void UpdateProcess(float deltaTime)
 		{
-			throw new System.NotImplementedException();
 		}
 
 		public void LateUpdateProcess(float deltaTime)
 		{
-			throw new System.NotImplementedException();
 		}
 
 		/// <summary>
@@ -47,6 +58,8 @@ namespace Game.Battle.TurnSystem.Session
 		/// </summary>
 		private void IncreaseTurn()
 		{
+			TurnTable.Clear();
+			currentTurnCursor = 0;
 			currentTurn++;
 
 			if (ServiceManager.TryGetService(out IRandomService randomService))
@@ -57,16 +70,40 @@ namespace Game.Battle.TurnSystem.Session
 
 		public void Dispose()
 		{
+			Stop();
+			IsAlive = false;
 		}
 
 		public void Start()
 		{
-			throw new System.NotImplementedException();
+			if (!IsRunning && ServiceManager.TryGetService(out ICoroutineService coroutineService))
+			{
+				turnProcessHandle = coroutineService.Run(TurnProcess());
+			}
+
+			IsRunning = true;
 		}
 
 		public void Stop()
 		{
-			throw new System.NotImplementedException();
+			// 턴이 진행 중이면 강제로 종료
+			if (IsRunning)
+			{
+				turnProcessHandle.Stop();
+			}
+
+			IsRunning = false;
+			Clear();
+		}
+
+		/// <summary>
+		/// 내부 정보들을 청소
+		/// </summary>
+		private void Clear()
+		{
+			currentTurn = 0;
+			currentTurnCursor = 0;
+			TurnTable.Clear();
 		}
 
 		public IBattleLog GetLog(int logId)
@@ -77,6 +114,41 @@ namespace Game.Battle.TurnSystem.Session
 			}
 
 			return EmptyLog.Instance;
+		}
+
+		public bool TryGetCharacter(int id, out IBattleCharacter character)
+		{
+			character = default;
+
+			if (Characters.TryGetValue(id, out var result))
+			{
+				character = result;
+				return true;
+			}
+
+			return false;
+		}
+
+		public IBattleObject RegisterEntity(IEntity entity, IBattleEntityController battleEntityController)
+		{
+			var result = new TurnBattleCharacter(entity, battleEntityController as ITurnBattleCharacterController);
+
+			Characters.Add(result.Id, result);
+
+			return result;
+		}
+
+		public void UnregisterEntity(IEntity entity)
+		{
+			if (Characters.TryGetValue(entity.Id, out var character))
+			{
+				if (character is IDisposable disposable)
+				{
+					disposable.Dispose();
+				}
+
+				Characters.Remove(entity.Id);
+			}
 		}
 
 		public void ExecuteBattleAction(IBattleObject from, IBattleObject to, ITurnBattleAction battleAction)
@@ -99,6 +171,36 @@ namespace Game.Battle.TurnSystem.Session
 				battleAction.Execute(from, to, this, battleLog);
 				// 여기서 로그를 생성한다.
 				messageService.Publish(BattleActionExecutedMessage.Create(from, to, battleAction, logId));
+			}
+		}
+
+		private IEnumerator TurnProcess()
+		{
+			// turn table 생성
+			TurnTable.Clear();
+
+			// 일단 캐릭터의 스피드를 중심으로 turn table 생성
+			TurnTable.AddRange(Characters
+				.OrderByDescending(x => x.Value.Speed)
+				.Select(x => x.Key));
+
+			currentTurnCursor = 0;
+
+			while (TurnTable.Count > currentTurnCursor && IsRunning)
+			{
+				var currentCharacterId = TurnTable[currentTurnCursor];
+
+				if (Characters.TryGetValue(currentCharacterId, out var character))
+				{
+					yield return character.TurnProcess(currentTurnCursor, this);
+				}
+
+				++currentTurnCursor;
+			}
+
+			if (IsRunning)
+			{
+				IncreaseTurn();
 			}
 		}
 	}

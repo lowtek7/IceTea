@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Core;
 
 namespace Service.Game.Battle
@@ -12,10 +13,18 @@ namespace Service.Game.Battle
 
 		bool IsRunning { get; }
 
+		IEnumerable<int> CharacterIds { get; }
+
 		void Start();
 
 		void Stop();
 
 		IBattleLog GetLog(int logId);
+
+		bool TryGetCharacter(int id, out IBattleCharacter character);
+
+		IBattleObject RegisterEntity(IEntity entity, IBattleEntityController entityController);
+
+		void UnregisterEntity(IEntity entity);
 	}
 }
