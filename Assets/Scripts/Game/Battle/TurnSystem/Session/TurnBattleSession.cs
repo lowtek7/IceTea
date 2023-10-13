@@ -131,7 +131,7 @@ namespace Game.Battle.TurnSystem.Session
 
 		public IBattleObject RegisterEntity(IEntity entity, IBattleEntityController battleEntityController)
 		{
-			var result = new TurnBattleCharacter(entity, battleEntityController as ITurnBattleCharacterController);
+			var result = new TurnBattleCharacter(Id, entity, battleEntityController as ITurnBattleCharacterController);
 
 			Characters.Add(result.Id, result);
 
@@ -176,31 +176,34 @@ namespace Game.Battle.TurnSystem.Session
 
 		private IEnumerator TurnProcess()
 		{
-			// turn table 생성
-			TurnTable.Clear();
-
-			// 일단 캐릭터의 스피드를 중심으로 turn table 생성
-			TurnTable.AddRange(Characters
-				.OrderByDescending(x => x.Value.Speed)
-				.Select(x => x.Key));
-
-			currentTurnCursor = 0;
-
-			while (TurnTable.Count > currentTurnCursor && IsRunning)
+			while (IsRunning)
 			{
-				var currentCharacterId = TurnTable[currentTurnCursor];
+				// turn table 생성
+				TurnTable.Clear();
 
-				if (Characters.TryGetValue(currentCharacterId, out var character))
+				// 일단 캐릭터의 스피드를 중심으로 turn table 생성
+				TurnTable.AddRange(Characters
+					.OrderByDescending(x => x.Value.Speed)
+					.Select(x => x.Key));
+
+				currentTurnCursor = 0;
+
+				while (TurnTable.Count > currentTurnCursor && IsRunning)
 				{
-					yield return character.TurnProcess(currentTurnCursor, this);
+					var currentCharacterId = TurnTable[currentTurnCursor];
+
+					if (Characters.TryGetValue(currentCharacterId, out var character))
+					{
+						yield return character.TurnProcess(currentTurnCursor, this);
+					}
+
+					++currentTurnCursor;
 				}
 
-				++currentTurnCursor;
-			}
-
-			if (IsRunning)
-			{
-				IncreaseTurn();
+				if (IsRunning)
+				{
+					IncreaseTurn();
+				}
 			}
 		}
 	}

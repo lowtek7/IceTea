@@ -1,6 +1,9 @@
-﻿namespace Service.Character
+﻿using System;
+using Core;
+
+namespace Service.Character
 {
-	public interface ICharacterSpec
+	public interface ICharacterSpec : IEntity
 	{
 		/// <summary>
 		/// 타입 Id (flag 형식으로 사용)
@@ -58,5 +61,39 @@
 		float CriticalDamage { get; }
 
 		float GetValue(CharacterStatType statType, int customIndex);
+	}
+
+	public static class CharacterSpecExtensions
+	{
+		public static float GetValue(this ICharacterSpec spec, CharacterStatType statType, int customIndex)
+		{
+			switch (statType)
+			{
+				case CharacterStatType.TypeId:
+					return spec.TypeId;
+				case CharacterStatType.Hp:
+					return spec.Hp;
+				case CharacterStatType.Energy:
+					return spec.Energy;
+				case CharacterStatType.HpRegenPer:
+					return spec.HpRegenPer;
+				case CharacterStatType.Atk:
+					return spec.Atk;
+				case CharacterStatType.Def:
+					return spec.Def;
+				case CharacterStatType.Speed:
+					return spec.Speed;
+				case CharacterStatType.CriticalRate:
+					return spec.CriticalRate;
+				case CharacterStatType.CriticalDamage:
+					return spec.CriticalDamage;
+				case CharacterStatType.Custom:
+					break;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(statType), statType, null);
+			}
+
+			return 0;
+		}
 	}
 }

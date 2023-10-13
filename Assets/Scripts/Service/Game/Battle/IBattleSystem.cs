@@ -19,6 +19,10 @@ namespace Service.Game.Battle
 		/// </summary>
 		IBattleSession CreateSession();
 
+		bool TryGetSession(int id, out IBattleSession session);
+
 		void ReleaseSession(IBattleSession battleSession);
+
+		bool TryGetCharacter(int sessionId, int characterId, out IBattleCharacter battleCharacter);
 	}
 }

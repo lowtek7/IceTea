@@ -35,7 +35,23 @@ namespace Game.Battle
 
 			resultSystem.Init();
 
+			battleSystems.Add(systemType, resultSystem);
+
 			return resultSystem;
+		}
+
+		public bool TryGetSystem<T>(out T system) where T : IBattleSystem
+		{
+			system = default;
+
+			if (battleSystems.TryGetValue(typeof(T), out var result) &&
+				result is T output)
+			{
+				system = output;
+				return true;
+			}
+
+			return false;
 		}
 
 		public bool DestroySystem<T>() where T : IBattleSystem

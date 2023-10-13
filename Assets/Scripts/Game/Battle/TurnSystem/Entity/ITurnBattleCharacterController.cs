@@ -8,4 +8,9 @@ namespace Game.Battle.TurnSystem.Entity
 	{
 		IEnumerator TurnProcess(int turnCursor, TurnBattleSession session, TurnBattleCharacter character);
 	}
+
+	public interface ITurnBattlePlayableCharacterController : ITurnBattleCharacterController
+	{
+
+	}
 }

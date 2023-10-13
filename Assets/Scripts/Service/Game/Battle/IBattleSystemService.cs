@@ -11,6 +11,8 @@
 		/// <returns></returns>
 		T CreateSystem<T>() where T : IBattleSystem, new();
 
+		bool TryGetSystem<T>(out T system) where T : IBattleSystem;
+
 		bool DestroySystem<T>() where T : IBattleSystem;
 	}
 }

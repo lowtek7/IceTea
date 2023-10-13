@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Core;
 using Game.Battle.TurnSystem.Session;
 using Service.Game.Battle;
 
@@ -51,12 +50,30 @@ namespace Game.Battle.TurnSystem
 			return session;
 		}
 
+		public bool TryGetSession(int id, out IBattleSession session)
+		{
+			return Sessions.TryGetValue(id, out session);
+		}
+
 		public void ReleaseSession(IBattleSession battleSession)
 		{
 			SessionIdQueue.Enqueue(battleSession.Id);
 			Sessions.Remove(battleSession.Id);
 
 			battleSession.Dispose();
+		}
+
+		public bool TryGetCharacter(int sessionId, int characterId, out IBattleCharacter battleCharacter)
+		{
+			battleCharacter = default;
+
+			if (Sessions.TryGetValue(sessionId, out var session) &&
+				session.TryGetCharacter(characterId, out battleCharacter))
+			{
+				return true;
+			}
+
+			return false;
 		}
 
 		public void UpdateProcess(float deltaTime)
