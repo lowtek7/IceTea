@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Core.MessageSystem;
 using Game.Battle.TurnSystem;
 using Game.Battle.TurnSystem.Entity;
@@ -32,14 +33,26 @@ namespace UnityGame
 
 		private IBattleCharacter currentCharacter;
 
+		private readonly List<SubscribeHandler> subscribeHandlers = new List<SubscribeHandler>();
+
 		private void Start()
 		{
 			if (ServiceManager.TryGetService(out IMessageService messageService))
 			{
-				messageService.Subscribe<CharacterTurnStartMessage>(OnCharacterTurnStart);
+				subscribeHandlers.Add(messageService.Subscribe<CharacterTurnStartMessage>(OnCharacterTurnStart));
 			}
 
 			SetActiveByButtons(false);
+		}
+
+		private void OnDestroy()
+		{
+			foreach (var subscribeHandler in subscribeHandlers)
+			{
+				subscribeHandler.Dispose();
+			}
+
+			subscribeHandlers.Clear();
 		}
 
 		private bool OnCharacterTurnStart(IMessage message)

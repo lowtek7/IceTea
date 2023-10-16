@@ -1,22 +1,38 @@
-﻿using Service.Game.Battle;
+﻿using System.Collections;
+using Game.Battle.TurnSystem.Entity;
+using Service.Game.Battle;
 
 namespace Game.Battle.TurnSystem.Action
 {
+	public enum TargetingMode
+	{
+		Self = 0,
+		AllTeam,
+		AllEnemy,
+		SingleTeam,
+		SingleEnemy,
+		MultiTeam,
+		MultiEnemy,
+	}
+
 	/// <summary>
 	/// 턴 배틀 액션은 조합형으로 디자인 가능하게
 	/// </summary>
 	public interface ITurnBattleAction : IBattleAction
 	{
+		TargetingMode TargetingMode { get; }
+
+		/// <summary>
+		/// 멀티 타겟팅의 경우에만 사용.
+		/// </summary>
+		int TargetingCount { get; }
+
 		MotionType MotionType { get; }
 
 		/// <summary>
 		/// 배틀 액션 실행.
 		/// 실행 후 로그에 배틀 액션의 결과를 저장한다.
 		/// </summary>
-		/// <param name="from">실행자</param>
-		/// <param name="to">대상</param>
-		/// <param name="battleSession">배틀 세션</param>
-		/// <param name="battleLog">기록할 로그</param>
-		void Execute(IBattleObject from, IBattleObject to, IBattleSession battleSession, TurnBattleLog battleLog);
+		IEnumerator Execute(IBattleCharacter self, ITurnBattleSelector battleSelector, IBattleSession battleSession);
 	}
 }

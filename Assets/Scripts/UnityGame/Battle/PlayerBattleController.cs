@@ -1,26 +1,44 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using Core.MessageSystem;
+using Game.Battle.TurnSystem.Action;
 using Game.Battle.TurnSystem.Entity;
 using Game.Battle.TurnSystem.Message;
 using Game.Battle.TurnSystem.Session;
 using Service;
+using Service.Game.Battle;
 using UnityEngine;
 
 namespace UnityGame.Battle
 {
-	public class PlayerBattleController : ITurnBattlePlayableCharacterController
+	public class PlayerBattleController : ITurnBattlePlayableCharacterController, IDisposable
 	{
 		private bool canInput = false;
 
 		private bool isInput = false;
-
-		private TurnBattleCharacterBehaviour self;
 
 		private float forwardMoveDuration = 1.2f;
 
 		private float backwardMoveDuration = 0.75f;
 
 		private float moveDistance = 1.5f;
+
+		private readonly List<SubscribeHandler> subscribeHandlers = new List<SubscribeHandler>();
+
+		private TurnBattleSelector selector;
+
+		private IBattleCharacter Owner { get; set; }
+
+		public ITurnBattleSelector Selector => selector;
+
+		private DefaultAttackAction DefaultAttackAction { get; }
+
+		public void Init(IBattleCharacter owner)
+		{
+			Owner = owner;
+			selector = new TurnBattleSelector(owner);
+		}
 
 		public IEnumerator TurnProcess(int turnCursor, TurnBattleSession session, TurnBattleCharacter character)
 		{
@@ -34,42 +52,17 @@ namespace UnityGame.Battle
 			isInput = false;
 			canInput = false;
 
-			var startPos = self.transform.position;
-			var endPos = startPos + new Vector3(moveDistance, 0, 0);
-			var timePassed = 0f;
-
-			while (timePassed < forwardMoveDuration)
-			{
-				timePassed += Time.deltaTime;
-				var progress = timePassed / forwardMoveDuration;
-
-				self.transform.position = startPos + new Vector3(moveDistance * progress, 0, 0);
-				yield return null;
-			}
-
-			timePassed = 0f;
-
-			while (timePassed < backwardMoveDuration)
-			{
-				timePassed += Time.deltaTime;
-
-				var progress = timePassed / backwardMoveDuration;
-
-				self.transform.position = endPos + new Vector3(-moveDistance * progress, 0, 0);
-				yield return null;
-			}
-
-			self.transform.position = startPos;
+			yield return DefaultAttackAction.Execute(Owner, Selector, session);
 		}
 
-		public PlayerBattleController(TurnBattleCharacterBehaviour behaviour)
+		public PlayerBattleController()
 		{
-			self = behaviour;
 			canInput = false;
+			DefaultAttackAction = new DefaultAttackAction();
 
 			if (ServiceManager.TryGetService(out IMessageService messageService))
 			{
-				messageService.Subscribe<TurnBattleActionMessage>(OnEvent);
+				subscribeHandlers.Add(messageService.Subscribe<TurnBattleActionMessage>(OnEvent));
 			}
 		}
 
@@ -84,9 +77,20 @@ namespace UnityGame.Battle
 			{
 				isInput = true;
 				canInput = false;
+				selector.SetTarget(turnBattleActionMessage.To);
 			}
 
 			return false;
+		}
+
+		public void Dispose()
+		{
+			foreach (var subscribeHandler in subscribeHandlers)
+			{
+				subscribeHandler.Dispose();
+			}
+
+			subscribeHandlers.Clear();
 		}
 	}
 }

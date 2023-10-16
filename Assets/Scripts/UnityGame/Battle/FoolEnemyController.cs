@@ -1,53 +1,51 @@
 ﻿using System.Collections;
+using Game.Battle.TurnSystem.Action;
 using Game.Battle.TurnSystem.Entity;
 using Game.Battle.TurnSystem.Session;
+using Service.Game.Battle;
 using UnityEngine;
 
 namespace UnityGame.Battle
 {
 	public class FoolEnemyController : ITurnBattleCharacterController
 	{
-		private TurnBattleCharacterBehaviour self;
-
 		private float forwardMoveDuration = 1.2f;
 
 		private float backwardMoveDuration = 0.75f;
 
 		private float moveDistance = 1.5f;
 
-		public IEnumerator TurnProcess(int turnCursor, TurnBattleSession session, TurnBattleCharacter character)
+		private TurnBattleSelector selector;
+
+		private IBattleCharacter Owner { get; set; }
+
+		public ITurnBattleSelector Selector => selector;
+
+		private DefaultAttackAction DefaultAttackAction { get; }
+
+		public void Init(IBattleCharacter owner)
 		{
-			var startPos = self.transform.position;
-			var endPos = startPos + new Vector3(-moveDistance, 0, 0);
-			var timePassed = 0f;
-
-			while (timePassed < forwardMoveDuration)
-			{
-				timePassed += Time.deltaTime;
-				var progress = timePassed / forwardMoveDuration;
-
-				self.transform.position = startPos + new Vector3(-moveDistance * progress, 0, 0);
-				yield return null;
-			}
-
-			timePassed = 0f;
-
-			while (timePassed < backwardMoveDuration)
-			{
-				timePassed += Time.deltaTime;
-
-				var progress = timePassed / backwardMoveDuration;
-
-				self.transform.position = endPos + new Vector3(moveDistance * progress, 0, 0);
-				yield return null;
-			}
-
-			self.transform.position = startPos;
+			Owner = owner;
+			selector = new TurnBattleSelector(owner);
 		}
 
-		public FoolEnemyController(TurnBattleCharacterBehaviour behaviour)
+		public IEnumerator TurnProcess(int turnCursor, TurnBattleSession session, TurnBattleCharacter character)
 		{
-			self = behaviour;
+			foreach (var targetId in session.CharacterIds)
+			{
+				if (targetId != Owner.Id)
+				{
+					selector.SetTarget(targetId);
+					break;
+				}
+			}
+
+			yield return DefaultAttackAction.Execute(Owner, Selector, session);
+		}
+
+		public FoolEnemyController()
+		{
+			DefaultAttackAction = new DefaultAttackAction();
 		}
 	}
 }

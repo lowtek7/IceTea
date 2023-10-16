@@ -2,7 +2,7 @@
 
 namespace Core.MessageSystem
 {
-	public readonly struct SubscribeHandler : IDisposable
+	public readonly struct SubscribeHandler : IDisposable, IEquatable<SubscribeHandler>
 	{
 		private Guid Id { get; }
 
@@ -35,6 +35,36 @@ namespace Core.MessageSystem
 			{
 				SubscriberManager.Unsubscribe(Id);
 			}
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (obj is SubscribeHandler target)
+			{
+				return Id == target.Id;
+			}
+
+			return base.Equals(obj);
+		}
+
+		public bool Equals(SubscribeHandler other)
+		{
+			return Id.Equals(other.Id);
+		}
+
+		public override int GetHashCode()
+		{
+			return Id.GetHashCode();
+		}
+
+		public static bool operator ==(SubscribeHandler left, SubscribeHandler right)
+		{
+			return left.Equals(right);
+		}
+
+		public static bool operator !=(SubscribeHandler left, SubscribeHandler right)
+		{
+			return !left.Equals(right);
 		}
 	}
 }

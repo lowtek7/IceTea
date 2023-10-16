@@ -135,6 +135,11 @@ namespace Game.Battle.TurnSystem.Session
 
 			Characters.Add(result.Id, result);
 
+			if (battleEntityController is ITurnBattleCharacterController turnBattleCharacterController)
+			{
+				turnBattleCharacterController.Init(result);
+			}
+
 			return result;
 		}
 
@@ -151,28 +156,29 @@ namespace Game.Battle.TurnSystem.Session
 			}
 		}
 
-		public void ExecuteBattleAction(IBattleObject from, IBattleObject to, ITurnBattleAction battleAction)
-		{
-			if (ServiceManager.TryGetService(out IMessageService messageService))
-			{
-				int logId = BattleLogs.Count;
-				int seed = -1;
-				ulong step = 0;
-
-				if (ServiceManager.TryGetService(out IRandomService randomService))
-				{
-					seed = randomService.Seed;
-					step = randomService.Step;
-				}
-
-				// 배틀 로그 생성
-				var battleLog = new TurnBattleLog(logId, seed, step, from, to, battleAction);
-				BattleLogs.Add(battleLog);
-				battleAction.Execute(from, to, this, battleLog);
-				// 여기서 로그를 생성한다.
-				messageService.Publish(BattleActionExecutedMessage.Create(from, to, battleAction, logId));
-			}
-		}
+		// 배틀로그 기능을 언젠가 재활성화 해야해서 주석으로 기록을 남겨둠
+		// public void ExecuteBattleAction(IBattleObject from, IBattleObject to, ITurnBattleAction battleAction)
+		// {
+		// 	if (ServiceManager.TryGetService(out IMessageService messageService))
+		// 	{
+		// 		int logId = BattleLogs.Count;
+		// 		int seed = -1;
+		// 		ulong step = 0;
+		//
+		// 		if (ServiceManager.TryGetService(out IRandomService randomService))
+		// 		{
+		// 			seed = randomService.Seed;
+		// 			step = randomService.Step;
+		// 		}
+		//
+		// 		// 배틀 로그 생성
+		// 		var battleLog = new TurnBattleLog(logId, seed, step, from, to, battleAction);
+		// 		BattleLogs.Add(battleLog);
+		// 		battleAction.Execute(from, to, this, battleLog);
+		// 		// 여기서 로그를 생성한다.
+		// 		messageService.Publish(BattleActionExecutedMessage.Create(from, to, battleAction, logId));
+		// 	}
+		// }
 
 		private IEnumerator TurnProcess()
 		{
@@ -183,7 +189,15 @@ namespace Game.Battle.TurnSystem.Session
 
 				// 일단 캐릭터의 스피드를 중심으로 turn table 생성
 				TurnTable.AddRange(Characters
-					.OrderByDescending(x => x.Value.Speed)
+					.OrderByDescending(x =>
+					{
+						var speed = Convert.ToSingle(x.Value.Speed);
+						var weight = x.Value.TurnBattleCharacterController is ITurnBattlePlayableCharacterController
+							? 0.5f
+							: 0f;
+
+						return speed + weight;
+					})
 					.Select(x => x.Key));
 
 				currentTurnCursor = 0;

@@ -52,15 +52,15 @@ namespace UnityGame
 				var playerCharacter = new DefaultCharacter(1);
 
 				//커플링이 있어서 이 결합을 풀어내야함.
-				var result = session.RegisterEntity(playerCharacter, new PlayerBattleController(player));
+				var result = session.RegisterEntity(playerCharacter, new PlayerBattleController());
 
-				player.SetCharacter(result as IBattleCharacter);
+				player.Init(result as IBattleCharacter);
 
 				var enemyCharacter = new DefaultCharacter(2);
 
-				result = session.RegisterEntity(enemyCharacter, new FoolEnemyController(enemy));
+				result = session.RegisterEntity(enemyCharacter, new FoolEnemyController());
 
-				enemy.SetCharacter(result as IBattleCharacter);
+				enemy.Init(result as IBattleCharacter);
 
 				session.Start();
 			}
